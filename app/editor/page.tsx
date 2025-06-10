@@ -45,11 +45,17 @@ export default function EditorPage() {
       // 清除之前的实例
       markmapRef.current.innerHTML = "";
       
+      // 创建SVG元素
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('width', '100%');
+      svg.setAttribute('height', '100%');
+      markmapRef.current.appendChild(svg);
+      
       // 转换markdown为思维导图数据
       const { root } = transformer.transform(content);
       
       // 渲染思维导图
-      mmRef.current = Markmap.create(markmapRef.current, null, root);
+      mmRef.current = Markmap.create(svg, null, root);
     }
   };
 

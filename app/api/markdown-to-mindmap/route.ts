@@ -33,14 +33,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 转换markdown为思维导图数据
-    const { root, features } = transformer.transform(body.markdown);
-    
-    // 返回转换后的数据
-    return NextResponse.json({ 
-      success: true,
-      data: { root, features } 
-    });
+    try {
+      // 转换markdown为思维导图数据
+      const { root, features } = transformer.transform(body.markdown);
+      
+      // 返回转换后的数据
+      return NextResponse.json({ 
+        success: true,
+        data: { root, features } 
+      });
+    } catch (transformError) {
+      console.error("转换Markdown时出错:", transformError);
+      return NextResponse.json(
+        { error: "转换Markdown失败，请检查输入格式" },
+        { status: 400 }
+      );
+    }
   } catch (error) {
     console.error("处理请求时出错:", error);
     return NextResponse.json(
