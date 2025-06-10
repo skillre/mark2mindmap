@@ -38,6 +38,16 @@ export default function Home() {
           </div>
         </div>
 
+        <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-3">嵌入示例</h2>
+          <p className="text-gray-600 mb-4">
+            查看如何在您自己的网页中嵌入思维导图的示例
+          </p>
+          <Link href="/embed-example" className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-500 hover:bg-blue-600">
+            查看示例
+          </Link>
+        </div>
+
         <div className="bg-white p-6 mt-6 rounded-lg shadow-md">
           <h2 className="text-2xl font-semibold text-gray-800 mb-3">支持的功能</h2>
           <ul className="list-disc list-inside space-y-2 text-gray-600">
@@ -46,17 +56,8 @@ export default function Home() {
             <li>超链接和图片</li>
             <li>代码块和行内代码</li>
             <li>实时预览和交互</li>
+            <li>HTML嵌入支持</li>
           </ul>
-        </div>
-        
-        <div className="bg-white p-6 mt-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-3">测试API</h2>
-          <p className="text-gray-600 mb-4">
-            在这个页面上直接测试API功能，查看生成的HTML思维导图
-          </p>
-          <Link href="/test-api" className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-500 hover:bg-blue-600">
-            测试API
-          </Link>
         </div>
       </div>
     </div>
