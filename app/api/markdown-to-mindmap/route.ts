@@ -37,12 +37,17 @@ export async function POST(request: NextRequest) {
       // 转换markdown为思维导图数据
       const { root, features } = transformer.transform(body.markdown);
       
+      // 获取文件名（如果提供）或使用默认文件名
+      const filename = body.filename ? 
+        (body.filename.endsWith('.html') ? body.filename : `${body.filename}.html`) : 
+        'mindmap.html';
+      
       // 创建HTML文件内容
       const htmlContent = generateMarkmapHtml(root, body.title || 'Markdown MindMap');
       
       // 创建响应头，设置为文件下载
       const headers = new Headers();
-      headers.set('Content-Disposition', 'attachment; filename="mindmap.html"');
+      headers.set('Content-Disposition', `attachment; filename="${filename}"`);
       headers.set('Content-Type', 'text/html; charset=utf-8');
       
       // 返回HTML文件

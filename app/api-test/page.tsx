@@ -18,6 +18,7 @@ export default function ApiTestPage() {
   - 嵌套列表项 2.2`);
   
   const [title, setTitle] = useState("API测试生成的思维导图");
+  const [filename, setFilename] = useState("mindmap.html");
   const [apiKey, setApiKey] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -51,7 +52,8 @@ export default function ApiTestPage() {
         },
         body: JSON.stringify({
           markdown,
-          title
+          title,
+          filename: filename.trim() || "mindmap.html" // 使用用户提供的文件名或默认值
         })
       });
       
@@ -71,7 +73,7 @@ export default function ApiTestPage() {
       // 创建下载链接并点击
       const a = document.createElement("a");
       a.href = url;
-      a.download = "mindmap.html";
+      a.download = filename.trim() || "mindmap.html"; // 使用与请求相同的文件名
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -124,18 +126,35 @@ export default function ApiTestPage() {
             />
           </div>
           
-          <div className="mb-4">
-            <label htmlFor="title" className="block mb-2 font-medium text-gray-700">
-              思维导图标题
-            </label>
-            <input
-              type="text"
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded"
-              placeholder="输入思维导图标题"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label htmlFor="title" className="block mb-2 font-medium text-gray-700">
+                思维导图标题
+              </label>
+              <input
+                type="text"
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+                placeholder="输入思维导图标题"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="filename" className="block mb-2 font-medium text-gray-700">
+                文件名
+              </label>
+              <input
+                type="text"
+                id="filename"
+                value={filename}
+                onChange={(e) => setFilename(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+                placeholder="输入下载文件名"
+              />
+              <p className="mt-1 text-xs text-gray-500">如不包含.html后缀，将自动添加</p>
+            </div>
           </div>
           
           <div className="mb-6">

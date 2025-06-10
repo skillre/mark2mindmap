@@ -11,9 +11,10 @@ export default function ApiDocsPage() {
   -H 'x-api-key: your-api-key-here' \\
   -d '{
   "markdown": "# 这是标题\\n## 这是子标题\\n- 这是列表项\\n  - 这是嵌套列表项",
-  "title": "我的思维导图"
+  "title": "我的思维导图",
+  "filename": "my-mindmap.html"
 }' \\
-  -o mindmap.html`;
+  -o my-mindmap.html`;
 
   const fetchExample = `const response = await fetch('https://your-domain.com/api/markdown-to-mindmap', {
   method: 'POST',
@@ -23,7 +24,8 @@ export default function ApiDocsPage() {
   },
   body: JSON.stringify({
     markdown: '# 这是标题\\n## 这是子标题\\n- 这是列表项\\n  - 这是嵌套列表项',
-    title: '我的思维导图'
+    title: '我的思维导图',
+    filename: 'my-mindmap.html'
   })
 });
 
@@ -36,7 +38,8 @@ if (response.ok) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'mindmap.html';
+  // 可以使用自定义文件名或从Content-Disposition获取文件名
+  a.download = 'my-mindmap.html';
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -120,11 +123,17 @@ if (response.ok) {
                 <td className="px-4 py-2 border">否</td>
                 <td className="px-4 py-2 border">HTML文件的标题（默认为'Markdown MindMap'）</td>
               </tr>
+              <tr>
+                <td className="px-4 py-2 border">filename</td>
+                <td className="px-4 py-2 border">string</td>
+                <td className="px-4 py-2 border">否</td>
+                <td className="px-4 py-2 border">下载的HTML文件名（默认为'mindmap.html'）</td>
+              </tr>
             </tbody>
           </table>
 
           <h4 className="mt-4">响应</h4>
-          <p>成功响应将返回一个HTML文件，包含可交互的思维导图。响应会以文件形式下载，文件名为mindmap.html。</p>
+          <p>成功响应将返回一个HTML文件，包含可交互的思维导图。响应会以文件形式下载，文件名可通过请求参数指定。</p>
           <p>HTML文件包含完整的思维导图渲染所需的所有代码和样式，可以离线使用。</p>
         </section>
 
