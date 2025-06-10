@@ -8,7 +8,6 @@ export default function ApiDebugPage() {
   const [apiEndpoint, setApiEndpoint] = useState<string>("");
   const [testResult, setTestResult] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [filename, setFilename] = useState<string>("api-test.html");
 
   useEffect(() => {
     // 获取当前域名作为API端点
@@ -41,10 +40,6 @@ export default function ApiDebugPage() {
     setTestResult("");
     
     try {
-      // 确保文件名有效
-      const safeFilename = filename.trim() || "api-test.html";
-      const finalFilename = safeFilename.endsWith('.html') ? safeFilename : `${safeFilename}.html`;
-      
       const response = await fetch(`${apiEndpoint}/api/markdown-to-mindmap`, {
         method: "POST",
         headers: {
@@ -54,7 +49,7 @@ export default function ApiDebugPage() {
         body: JSON.stringify({
           markdown: "# 测试标题\n## 子标题\n- 列表项1\n- 列表项2",
           title: "API测试",
-          filename: finalFilename
+          filename: "api-test.html"
         })
       });
       
@@ -67,7 +62,7 @@ export default function ApiDebugPage() {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = finalFilename; // 使用我们确定的文件名
+          a.download = 'api-test.html';
           document.body.appendChild(a);
           a.click();
           a.remove();
@@ -123,34 +118,18 @@ export default function ApiDebugPage() {
       
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-4">API连接测试</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label htmlFor="apiEndpoint" className="block mb-2 font-medium text-gray-700">
-              API端点
-            </label>
-            <input
-              type="text"
-              id="apiEndpoint"
-              value={apiEndpoint}
-              onChange={(e) => setApiEndpoint(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded"
-              placeholder="输入API端点，例如https://your-domain.com"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="filename" className="block mb-2 font-medium text-gray-700">
-              下载文件名
-            </label>
-            <input
-              type="text"
-              id="filename"
-              value={filename}
-              onChange={(e) => setFilename(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded"
-              placeholder="测试文件名，例如test.html"
-            />
-          </div>
+        <div className="mb-4">
+          <label htmlFor="apiEndpoint" className="block mb-2 font-medium text-gray-700">
+            API端点
+          </label>
+          <input
+            type="text"
+            id="apiEndpoint"
+            value={apiEndpoint}
+            onChange={(e) => setApiEndpoint(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded"
+            placeholder="输入API端点，例如https://your-domain.com"
+          />
         </div>
         
         <button
@@ -182,7 +161,6 @@ export default function ApiDebugPage() {
             <li>请求头必须包含"Content-Type: application/json"</li>
             <li>请求头必须包含"x-api-key"</li>
             <li>请求体必须包含有效的JSON，且包含"markdown"字段</li>
-            <li>如果指定filename字段，浏览器端也必须使用相同的文件名</li>
           </ul>
         </div>
       </div>

@@ -20,8 +20,10 @@ export default function ApiTestPage() {
   const [title, setTitle] = useState("API测试生成的思维导图");
   const [filename, setFilename] = useState("mindmap.html");
   const [apiKey, setApiKey] = useState("");
+  const [responseType, setResponseType] = useState<"html" | "json">("html");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [jsonResponse, setJsonResponse] = useState<any>(null);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,59 +40,89 @@ export default function ApiTestPage() {
     
     setLoading(true);
     setError("");
+    setJsonResponse(null);
     
     try {
       // 构建API请求URL
       const apiUrl = window.location.origin + "/api/markdown-to-mindmap";
-      
-      // 确保文件名有效
-      const safeFilename = filename.trim() || "mindmap.html";
-      const finalFilename = safeFilename.endsWith('.html') ? safeFilename : `${safeFilename}.html`;
       
       // 发送请求
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": apiKey
+          "x-api-key": apiKey,
+          ...(responseType === "json" ? { "x-expect-json": "true", "accept": "application/json" } : {})
         },
         body: JSON.stringify({
           markdown,
           title,
-          filename: finalFilename
+          filename: filename.trim() || "mindmap.html" // 使用用户提供的文件名或默认值
         })
       });
       
-      if (!response.ok) {
+      if (response.ok) {
+        if (responseType === "json") {
+          // 获取JSON响应
+          const jsonData = await response.json();
+          setJsonResponse(jsonData);
+          setTestResult(`API请求成功! 状态码: ${response.status}`);
+        } else {
+          // 获取HTML响应并下载
+          const htmlContent = await response.text();
+          setTestResult(`API请求成功! 状态码: ${response.status}`);
+          
+          // 创建Blob并下载
+          const blob = new Blob([htmlContent], { type: "text/html" });
+          const url = URL.createObjectURL(blob);
+          
+          // 创建下载链接并点击
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename.trim() || "mindmap.html";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          
+          // 释放URL
+          URL.revokeObjectURL(url);
+        }
+      } else {
         // 处理错误响应
-        const errorData = await response.json();
-        throw new Error(errorData.error || "API请求失败");
+        let errorText;
+        try {
+          const errorData = await response.json();
+          errorText = JSON.stringify(errorData);
+        } catch (e) {
+          errorText = await response.text();
+          if (!errorText) errorText = `${response.status} ${response.statusText}`;
+        }
+        setTestResult(`API请求失败: ${errorText}`);
       }
-      
-      // 获取响应内容
-      const htmlContent = await response.text();
-      
-      // 创建Blob并下载
-      const blob = new Blob([htmlContent], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
-      
-      // 创建下载链接并点击
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = finalFilename; // 确保使用正确的文件名
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      
-      // 释放URL
-      URL.revokeObjectURL(url);
-      
-      setError("");
     } catch (err: any) {
-      setError(err.message || "生成思维导图时出错");
+      setTestResult(`调用API出错: ${err.message || err}`);
     } finally {
       setLoading(false);
     }
+  };
+
+  const [testResult, setTestResult] = useState<string>("");
+  
+  // 处理JSON响应中的HTML下载
+  const handleDownloadHtml = () => {
+    if (!jsonResponse || !jsonResponse.content) return;
+    
+    const blob = new Blob([jsonResponse.content], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = jsonResponse.filename || filename || "mindmap.html";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    
+    URL.revokeObjectURL(url);
   };
   
   return (
@@ -161,6 +193,35 @@ export default function ApiTestPage() {
             </div>
           </div>
           
+          <div className="mb-4">
+            <label className="block mb-2 font-medium text-gray-700">响应格式</label>
+            <div className="flex gap-4">
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  name="responseType"
+                  value="html"
+                  checked={responseType === "html"}
+                  onChange={() => setResponseType("html")}
+                  className="mr-2"
+                />
+                HTML文件（直接下载）
+              </label>
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  name="responseType"
+                  value="json"
+                  checked={responseType === "json"}
+                  onChange={() => setResponseType("json")}
+                  className="mr-2"
+                />
+                JSON格式（适用于API代理）
+              </label>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">JSON格式适用于通过API代理/平台调用时获取文件名</p>
+          </div>
+          
           <div className="mb-6">
             <label htmlFor="markdown" className="block mb-2 font-medium text-gray-700">
               Markdown内容
@@ -188,9 +249,39 @@ export default function ApiTestPage() {
               loading ? "bg-blue-400" : "bg-primary hover:bg-blue-700"
             }`}
           >
-            {loading ? "正在生成..." : "生成思维导图HTML"}
+            {loading ? "正在生成..." : "生成思维导图"}
           </button>
         </form>
+        
+        {testResult && (
+          <div className={`mt-4 p-4 rounded-md ${
+            testResult.includes("成功") 
+              ? "bg-green-50 text-green-800" 
+              : "bg-red-50 text-red-800"
+          }`}>
+            <h3 className="font-medium mb-2">测试结果:</h3>
+            <pre className="whitespace-pre-wrap text-sm">{testResult}</pre>
+          </div>
+        )}
+        
+        {jsonResponse && (
+          <div className="mt-4">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-medium">JSON响应:</h3>
+              {jsonResponse.content && (
+                <button
+                  onClick={handleDownloadHtml}
+                  className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+                >
+                  下载HTML文件
+                </button>
+              )}
+            </div>
+            <div className="bg-gray-50 p-4 rounded-md overflow-auto max-h-96">
+              <pre className="text-sm whitespace-pre-wrap">{JSON.stringify(jsonResponse, null, 2)}</pre>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

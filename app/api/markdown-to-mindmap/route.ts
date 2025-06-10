@@ -67,26 +67,50 @@ export async function POST(request: NextRequest) {
       // 转换markdown为思维导图数据
       const { root, features } = transformer.transform(body.markdown);
       
-      // 获取并确保文件名的安全性和正确性
-      let filename = 'mindmap.html';
-      if (body.filename) {
-        // 清理文件名，移除任何目录分隔符或特殊字符
-        const cleanFilename = body.filename.replace(/[\/\\?%*:|"<>]/g, '-');
-        filename = cleanFilename.endsWith('.html') ? cleanFilename : `${cleanFilename}.html`;
-      }
+      // 获取文件名（如果提供）或使用默认文件名
+      const filename = body.filename ? 
+        (body.filename.endsWith('.html') ? body.filename : `${body.filename}.html`) : 
+        'mindmap.html';
       
       // 创建HTML文件内容
       const htmlContent = generateMarkmapHtml(root, body.title || 'Markdown MindMap');
       
-      // 设置为文件下载，确保使用正确的内容类型和编码
+      // 使用多种方式设置文件名，增加兼容性
+      // 1. 标准方式
       headers.set('Content-Disposition', `attachment; filename="${filename}"`);
-      headers.set('Content-Type', 'text/html; charset=utf-8');
+      // 2. 替代方式，用于某些代理
+      headers.set('X-Filename', filename);
+      headers.set('X-File-Name', filename);
+      headers.set('X-Custom-Filename', filename);
+      headers.set('X-Content-Filename', filename);
+      // 3. 设置特殊的Content-Type，包含文件名信息
+      headers.set('Content-Type', 'text/html; charset=utf-8; filename=' + encodeURIComponent(filename));
       
-      // 返回HTML文件
-      return new NextResponse(htmlContent, {
-        status: 200,
-        headers,
-      });
+      // 检查是否是JSON响应请求（某些API代理可能使用这种方式）
+      const acceptsJson = request.headers.get('accept')?.includes('application/json') || 
+                          request.headers.get('x-expect-json') === 'true';
+      
+      if (acceptsJson) {
+        // 返回JSON响应，包含HTML内容和文件名
+        return NextResponse.json({
+          success: true,
+          filename: filename,
+          content: htmlContent,
+          contentType: 'text/html',
+          metadata: {
+            title: body.title || 'Markdown MindMap',
+            filename: filename,
+            type: 'html',
+            format: 'mindmap'
+          }
+        }, { headers });
+      } else {
+        // 返回HTML文件
+        return new NextResponse(htmlContent, {
+          status: 200,
+          headers,
+        });
+      }
     } catch (transformError) {
       console.error("转换Markdown时出错:", transformError);
       headers.set("Content-Type", "application/json");
@@ -115,7 +139,6 @@ function generateMarkmapHtml(root: any, title: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>${title}</title>
   <style>
     body {
