@@ -32,12 +32,15 @@ export default function Home() {
             <p className="text-gray-600 mb-4">
               通过简单的HTTP请求，将我们的思维导图生成功能集成到您自己的应用程序中
             </p>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Link href="/api-docs" className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-secondary hover:bg-green-700">
                 查看文档
               </Link>
               <Link href="/api-test" className="inline-flex items-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-100">
                 测试API
+              </Link>
+              <Link href="/api-debug" className="inline-flex items-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-100">
+                调试工具
               </Link>
             </div>
           </div>
@@ -52,6 +55,8 @@ export default function Home() {
             <li>代码块和行内代码</li>
             <li>实时预览和交互</li>
             <li>导出SVG和HTML格式</li>
+            <li>自定义HTML文件名</li>
+            <li>跨域访问支持</li>
           </ul>
         </div>
       </div>

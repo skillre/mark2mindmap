@@ -11,25 +11,55 @@ const validateApiKey = (apiKey: string | null) => {
   return apiKey === validApiKey;
 };
 
+// 支持OPTIONS请求以处理CORS预检
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, x-api-key",
+    },
+  });
+}
+
 export async function POST(request: NextRequest) {
+  // 添加CORS头
+  const headers = new Headers();
+  headers.set("Access-Control-Allow-Origin", "*");
+  headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  headers.set("Access-Control-Allow-Headers", "Content-Type, x-api-key");
+
   try {
     // 验证API密钥
     const apiKey = request.headers.get("x-api-key");
     if (!validateApiKey(apiKey)) {
-      return NextResponse.json(
-        { error: "未授权访问，无效的API密钥" },
-        { status: 401 }
+      headers.set("Content-Type", "application/json");
+      return new NextResponse(
+        JSON.stringify({ error: "未授权访问，无效的API密钥" }),
+        { status: 401, headers }
       );
     }
 
     // 解析请求体
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      console.error("解析请求体时出错:", parseError);
+      headers.set("Content-Type", "application/json");
+      return new NextResponse(
+        JSON.stringify({ error: "请求体格式无效，请提供有效的JSON" }),
+        { status: 400, headers }
+      );
+    }
     
     // 验证请求体是否包含markdown字段
     if (!body || typeof body.markdown !== "string") {
-      return NextResponse.json(
-        { error: "请求格式不正确，缺少markdown字段" },
-        { status: 400 }
+      headers.set("Content-Type", "application/json");
+      return new NextResponse(
+        JSON.stringify({ error: "请求格式不正确，缺少markdown字段" }),
+        { status: 400, headers }
       );
     }
 
@@ -45,8 +75,7 @@ export async function POST(request: NextRequest) {
       // 创建HTML文件内容
       const htmlContent = generateMarkmapHtml(root, body.title || 'Markdown MindMap');
       
-      // 创建响应头，设置为文件下载
-      const headers = new Headers();
+      // 设置为文件下载
       headers.set('Content-Disposition', `attachment; filename="${filename}"`);
       headers.set('Content-Type', 'text/html; charset=utf-8');
       
@@ -57,16 +86,18 @@ export async function POST(request: NextRequest) {
       });
     } catch (transformError) {
       console.error("转换Markdown时出错:", transformError);
-      return NextResponse.json(
-        { error: "转换Markdown失败，请检查输入格式" },
-        { status: 400 }
+      headers.set("Content-Type", "application/json");
+      return new NextResponse(
+        JSON.stringify({ error: "转换Markdown失败，请检查输入格式" }),
+        { status: 400, headers }
       );
     }
   } catch (error) {
     console.error("处理请求时出错:", error);
-    return NextResponse.json(
-      { error: "服务器内部错误" },
-      { status: 500 }
+    headers.set("Content-Type", "application/json");
+    return new NextResponse(
+      JSON.stringify({ error: "服务器内部错误" }),
+      { status: 500, headers }
     );
   }
 }
