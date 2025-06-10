@@ -9,8 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@markmap/lib": "^0.15.3",
-    "@markmap/view": "^0.15.3",
     "markmap-cli": "^0.15.3",
     "markmap-common": "^0.15.2",
     "markmap-lib": "^0.15.3",
