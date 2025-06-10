@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+### 部署环境：
+1. 为了方便调试和部署，使用vercel进行部署。【我是vercel免费用户】
+2. 要综合考虑项目程序的大小和性能消耗。
