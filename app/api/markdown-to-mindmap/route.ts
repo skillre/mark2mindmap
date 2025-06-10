@@ -67,15 +67,18 @@ export async function POST(request: NextRequest) {
       // 转换markdown为思维导图数据
       const { root, features } = transformer.transform(body.markdown);
       
-      // 获取文件名（如果提供）或使用默认文件名
-      const filename = body.filename ? 
-        (body.filename.endsWith('.html') ? body.filename : `${body.filename}.html`) : 
-        'mindmap.html';
+      // 获取并确保文件名的安全性和正确性
+      let filename = 'mindmap.html';
+      if (body.filename) {
+        // 清理文件名，移除任何目录分隔符或特殊字符
+        const cleanFilename = body.filename.replace(/[\/\\?%*:|"<>]/g, '-');
+        filename = cleanFilename.endsWith('.html') ? cleanFilename : `${cleanFilename}.html`;
+      }
       
       // 创建HTML文件内容
       const htmlContent = generateMarkmapHtml(root, body.title || 'Markdown MindMap');
       
-      // 设置为文件下载
+      // 设置为文件下载，确保使用正确的内容类型和编码
       headers.set('Content-Disposition', `attachment; filename="${filename}"`);
       headers.set('Content-Type', 'text/html; charset=utf-8');
       
@@ -112,6 +115,7 @@ function generateMarkmapHtml(root: any, title: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>${title}</title>
   <style>
     body {

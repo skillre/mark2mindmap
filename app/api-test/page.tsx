@@ -43,6 +43,10 @@ export default function ApiTestPage() {
       // 构建API请求URL
       const apiUrl = window.location.origin + "/api/markdown-to-mindmap";
       
+      // 确保文件名有效
+      const safeFilename = filename.trim() || "mindmap.html";
+      const finalFilename = safeFilename.endsWith('.html') ? safeFilename : `${safeFilename}.html`;
+      
       // 发送请求
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -53,7 +57,7 @@ export default function ApiTestPage() {
         body: JSON.stringify({
           markdown,
           title,
-          filename: filename.trim() || "mindmap.html" // 使用用户提供的文件名或默认值
+          filename: finalFilename
         })
       });
       
@@ -73,7 +77,7 @@ export default function ApiTestPage() {
       // 创建下载链接并点击
       const a = document.createElement("a");
       a.href = url;
-      a.download = filename.trim() || "mindmap.html"; // 使用与请求相同的文件名
+      a.download = finalFilename; // 确保使用正确的文件名
       document.body.appendChild(a);
       a.click();
       a.remove();
