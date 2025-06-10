@@ -72,45 +72,23 @@ export async function POST(request: NextRequest) {
         (body.filename.endsWith('.html') ? body.filename : `${body.filename}.html`) : 
         'mindmap.html';
       
-      // 创建HTML文件内容
-      const htmlContent = generateMarkmapHtml(root, body.title || 'Markdown MindMap');
+      // 创建HTML文件内容，将filename作为meta标签嵌入
+      const htmlContent = generateMarkmapHtml(
+        root, 
+        body.title || 'Markdown MindMap', 
+        filename
+      );
       
-      // 使用多种方式设置文件名，增加兼容性
-      // 1. 标准方式
+      // 设置为文件下载
       headers.set('Content-Disposition', `attachment; filename="${filename}"`);
-      // 2. 替代方式，用于某些代理
-      headers.set('X-Filename', filename);
-      headers.set('X-File-Name', filename);
-      headers.set('X-Custom-Filename', filename);
-      headers.set('X-Content-Filename', filename);
-      // 3. 设置特殊的Content-Type，包含文件名信息
-      headers.set('Content-Type', 'text/html; charset=utf-8; filename=' + encodeURIComponent(filename));
+      headers.set('Content-Type', 'text/html; charset=utf-8');
+      headers.set('X-Filename', filename); // 添加自定义头，可能有助于一些系统识别
       
-      // 检查是否是JSON响应请求（某些API代理可能使用这种方式）
-      const acceptsJson = request.headers.get('accept')?.includes('application/json') || 
-                          request.headers.get('x-expect-json') === 'true';
-      
-      if (acceptsJson) {
-        // 返回JSON响应，包含HTML内容和文件名
-        return NextResponse.json({
-          success: true,
-          filename: filename,
-          content: htmlContent,
-          contentType: 'text/html',
-          metadata: {
-            title: body.title || 'Markdown MindMap',
-            filename: filename,
-            type: 'html',
-            format: 'mindmap'
-          }
-        }, { headers });
-      } else {
-        // 返回HTML文件
-        return new NextResponse(htmlContent, {
-          status: 200,
-          headers,
-        });
-      }
+      // 返回HTML文件
+      return new NextResponse(htmlContent, {
+        status: 200,
+        headers,
+      });
     } catch (transformError) {
       console.error("转换Markdown时出错:", transformError);
       headers.set("Content-Type", "application/json");
@@ -130,7 +108,7 @@ export async function POST(request: NextRequest) {
 }
 
 // 生成完整的HTML文件
-function generateMarkmapHtml(root: any, title: string): string {
+function generateMarkmapHtml(root: any, title: string, filename: string): string {
   // 将数据转换为JSON字符串
   const data = JSON.stringify(root);
   
@@ -139,6 +117,7 @@ function generateMarkmapHtml(root: any, title: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="markmap-filename" content="${filename}">
   <title>${title}</title>
   <style>
     body {
@@ -156,6 +135,10 @@ function generateMarkmapHtml(root: any, title: string): string {
       height: 100%;
     }
   </style>
+  <!-- 添加隐藏字段，用于帮助系统识别文件名 -->
+  <script type="application/json" id="markmap-metadata">
+    {"filename":"${filename}"}
+  </script>
 </head>
 <body>
   <div class="markmap-container">
@@ -167,6 +150,9 @@ function generateMarkmapHtml(root: any, title: string): string {
 
   <script>
     (function() {
+      // 设置文件名为全局变量，便于外部系统提取
+      window.markmapFilename = "${filename}";
+      
       // 初始化思维导图
       const { Markmap } = window.markmap;
       const svg = document.getElementById('markmap');

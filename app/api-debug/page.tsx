@@ -8,6 +8,7 @@ export default function ApiDebugPage() {
   const [apiEndpoint, setApiEndpoint] = useState<string>("");
   const [testResult, setTestResult] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [customFilename, setCustomFilename] = useState<string>("test-mindmap.html");
 
   useEffect(() => {
     // 获取当前域名作为API端点
@@ -49,24 +50,46 @@ export default function ApiDebugPage() {
         body: JSON.stringify({
           markdown: "# 测试标题\n## 子标题\n- 列表项1\n- 列表项2",
           title: "API测试",
-          filename: "api-test.html"
+          filename: customFilename
         })
       });
       
       if (response.ok) {
-        setTestResult(`API请求成功! 状态码: ${response.status}`);
+        // 尝试从响应头中获取文件名
+        const contentDisposition = response.headers.get('content-disposition');
+        const xFilename = response.headers.get('x-filename');
+        
+        setTestResult(`API请求成功! 状态码: ${response.status}\n` +
+                      `Content-Disposition: ${contentDisposition || '未设置'}\n` + 
+                      `X-Filename: ${xFilename || '未设置'}`);
         
         // 尝试下载结果
         const blob = await response.blob();
         if (blob.size > 0) {
+          // 保存下载的文件
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = 'api-test.html';
+          a.download = customFilename; // 使用我们提供的文件名
           document.body.appendChild(a);
           a.click();
           a.remove();
           URL.revokeObjectURL(url);
+          
+          // 检查下载的内容中是否包含文件名信息
+          try {
+            const htmlText = await blob.text();
+            const filenameMetaMatch = htmlText.match(/<meta name="markmap-filename" content="([^"]+)">/);
+            const metadataMatch = htmlText.match(/<script type="application\/json" id="markmap-metadata">[\s\S]*?filename":"([^"]+)"[\s\S]*?<\/script>/);
+            
+            if (filenameMetaMatch || metadataMatch) {
+              setTestResult(prev => prev + '\n\n文件内嵌入的文件名信息:\n' + 
+                `Meta标签: ${filenameMetaMatch ? filenameMetaMatch[1] : '未找到'}\n` +
+                `JSON元数据: ${metadataMatch ? metadataMatch[1] : '未找到'}`);
+            }
+          } catch (readError) {
+            console.error("无法读取下载的文件内容", readError);
+          }
         }
       } else {
         let errorText;
@@ -131,6 +154,21 @@ export default function ApiDebugPage() {
             placeholder="输入API端点，例如https://your-domain.com"
           />
         </div>
+
+        <div className="mb-4">
+          <label htmlFor="customFilename" className="block mb-2 font-medium text-gray-700">
+            自定义文件名
+          </label>
+          <input
+            type="text"
+            id="customFilename"
+            value={customFilename}
+            onChange={(e) => setCustomFilename(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded"
+            placeholder="输入自定义文件名，例如my-mindmap.html"
+          />
+          <p className="mt-1 text-xs text-gray-500">测试API时使用的文件名，将在请求中发送，影响最终下载的文件名</p>
+        </div>
         
         <button
           onClick={testApiEndpoint}
@@ -143,7 +181,7 @@ export default function ApiDebugPage() {
         </button>
         
         {testResult && (
-          <div className={`mt-4 p-4 rounded-md ${
+          <div className={`mt-4 p-4 rounded-md overflow-auto ${
             testResult.includes("成功") 
               ? "bg-green-50 text-green-800" 
               : "bg-red-50 text-red-800"
@@ -154,14 +192,20 @@ export default function ApiDebugPage() {
         )}
         
         <div className="mt-4 p-4 bg-gray-50 rounded-md">
-          <h3 className="font-medium mb-2">调试提示:</h3>
+          <h3 className="font-medium mb-2">文件名处理说明:</h3>
+          <p className="text-sm mb-2">
+            当API返回思维导图HTML文件时，文件名信息会以多种方式传递:
+          </p>
           <ul className="list-disc list-inside text-sm space-y-1">
-            <li>确保API路径正确 (/api/markdown-to-mindmap)</li>
-            <li>确保使用POST方法发送请求</li>
-            <li>请求头必须包含"Content-Type: application/json"</li>
-            <li>请求头必须包含"x-api-key"</li>
-            <li>请求体必须包含有效的JSON，且包含"markdown"字段</li>
+            <li>HTTP响应头的Content-Disposition字段</li>
+            <li>HTTP响应头的自定义X-Filename字段</li>
+            <li>HTML文件的meta标签中(name="markmap-filename")</li>
+            <li>HTML文件中的JSON元数据(id="markmap-metadata")</li>
+            <li>HTML文件中的JavaScript全局变量(window.markmapFilename)</li>
           </ul>
+          <p className="text-sm mt-2">
+            尝试使用不同的文件名并下载结果，查看文件名是否正确应用。
+          </p>
         </div>
       </div>
     </div>
