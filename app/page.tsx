@@ -48,6 +48,16 @@ export default function Home() {
             <li>实时预览和交互</li>
           </ul>
         </div>
+        
+        <div className="bg-white p-6 mt-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-3">测试API</h2>
+          <p className="text-gray-600 mb-4">
+            在这个页面上直接测试API功能，查看生成的HTML思维导图
+          </p>
+          <Link href="/test-api" className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-500 hover:bg-blue-600">
+            测试API
+          </Link>
+        </div>
       </div>
     </div>
   );

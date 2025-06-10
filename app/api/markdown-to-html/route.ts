@@ -75,11 +75,11 @@ export async function POST(request: NextRequest) {
 </body>
 </html>`;
       
-      // 返回HTML响应
-      return new NextResponse(html, {
+      // 返回HTML响应，确保设置正确的内容类型
+      return new Response(html, {
         headers: {
-          "Content-Type": "text/html; charset=utf-8",
-        },
+          "Content-Type": "text/html; charset=utf-8"
+        }
       });
     } catch (transformError) {
       console.error("转换Markdown时出错:", transformError);
@@ -95,4 +95,16 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// 配置接收OPTIONS请求，解决CORS问题
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, x-api-key"
+    }
+  });
 } 
