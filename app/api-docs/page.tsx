@@ -68,6 +68,36 @@ console.log(data);`;
   }
 }`;
 
+  // HTML API示例
+  const htmlCurlExample = `curl -X POST \\
+  https://your-domain.com/api/markdown-to-html \\
+  -H 'Content-Type: application/json' \\
+  -H 'x-api-key: your-api-key-here' \\
+  -d '{
+  "markdown": "# 这是标题\\n## 这是子标题\\n- 这是列表项\\n  - 这是嵌套列表项"
+}' \\
+  -o mindmap.html`;
+
+  const htmlFetchExample = `// 获取HTML格式的思维导图
+const response = await fetch('https://your-domain.com/api/markdown-to-html', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'your-api-key-here'
+  },
+  body: JSON.stringify({
+    markdown: '# 这是标题\\n## 这是子标题\\n- 这是列表项\\n  - 这是嵌套列表项'
+  })
+});
+
+// 获取HTML文本
+const htmlContent = await response.text();
+
+// 在新窗口中显示思维导图
+const newWindow = window.open();
+newWindow.document.write(htmlContent);
+newWindow.document.close();`;
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
@@ -85,6 +115,7 @@ console.log(data);`;
           <h2>概述</h2>
           <p>
             我们的API允许您将Markdown文本转换为思维导图数据。您可以使用此API将思维导图功能集成到您自己的应用程序中。
+            我们提供两种API端点：一个返回JSON数据，另一个返回完整的HTML页面。
           </p>
         </section>
 
@@ -111,53 +142,113 @@ console.log(data);`;
 
         <section className="mb-8">
           <h2>端点</h2>
-          <h3>转换Markdown为思维导图数据</h3>
-          <div className="my-4">
-            <p><strong>URL:</strong> <code>/api/markdown-to-mindmap</code></p>
-            <p><strong>方法:</strong> <code>POST</code></p>
-            <p><strong>内容类型:</strong> <code>application/json</code></p>
-          </div>
-
-          <h4>请求参数</h4>
-          <table className="min-w-full border">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 border">参数</th>
-                <th className="px-4 py-2 border">类型</th>
-                <th className="px-4 py-2 border">必填</th>
-                <th className="px-4 py-2 border">描述</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="px-4 py-2 border">markdown</td>
-                <td className="px-4 py-2 border">string</td>
-                <td className="px-4 py-2 border">是</td>
-                <td className="px-4 py-2 border">Markdown格式的文本内容</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <h4 className="mt-4">响应</h4>
-          <p>成功响应将返回包含转换后思维导图数据的JSON对象。</p>
-        </section>
-
-        <section className="mb-8">
-          <h2>使用示例</h2>
           
-          <h3>使用cURL</h3>
-          <div className="bg-gray-800 text-white p-4 rounded overflow-x-auto">
-            <pre>{curlExample}</pre>
+          <div className="mb-12">
+            <h3>1. 转换Markdown为思维导图JSON数据</h3>
+            <div className="my-4">
+              <p><strong>URL:</strong> <code>/api/markdown-to-mindmap</code></p>
+              <p><strong>方法:</strong> <code>POST</code></p>
+              <p><strong>内容类型:</strong> <code>application/json</code></p>
+              <p><strong>响应类型:</strong> <code>application/json</code></p>
+            </div>
+
+            <h4>请求参数</h4>
+            <table className="min-w-full border">
+              <thead>
+                <tr>
+                  <th className="px-4 py-2 border">参数</th>
+                  <th className="px-4 py-2 border">类型</th>
+                  <th className="px-4 py-2 border">必填</th>
+                  <th className="px-4 py-2 border">描述</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="px-4 py-2 border">markdown</td>
+                  <td className="px-4 py-2 border">string</td>
+                  <td className="px-4 py-2 border">是</td>
+                  <td className="px-4 py-2 border">Markdown格式的文本内容</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h4 className="mt-4">响应</h4>
+            <p>成功响应将返回包含转换后思维导图数据的JSON对象。</p>
+            
+            <h4 className="mt-6">使用示例</h4>
+            <h5>使用cURL</h5>
+            <div className="bg-gray-800 text-white p-4 rounded overflow-x-auto">
+              <pre>{curlExample}</pre>
+            </div>
+            
+            <h5 className="mt-4">使用JavaScript</h5>
+            <div className="bg-gray-800 text-white p-4 rounded overflow-x-auto">
+              <pre>{fetchExample}</pre>
+            </div>
+            
+            <h5 className="mt-4">响应示例</h5>
+            <div className="bg-gray-800 text-white p-4 rounded overflow-x-auto">
+              <pre>{responseExample}</pre>
+            </div>
           </div>
           
-          <h3 className="mt-6">使用JavaScript</h3>
-          <div className="bg-gray-800 text-white p-4 rounded overflow-x-auto">
-            <pre>{fetchExample}</pre>
-          </div>
-          
-          <h3 className="mt-6">响应示例</h3>
-          <div className="bg-gray-800 text-white p-4 rounded overflow-x-auto">
-            <pre>{responseExample}</pre>
+          <div className="mb-12">
+            <h3>2. 转换Markdown为思维导图HTML</h3>
+            <div className="my-4">
+              <p><strong>URL:</strong> <code>/api/markdown-to-html</code></p>
+              <p><strong>方法:</strong> <code>POST</code></p>
+              <p><strong>内容类型:</strong> <code>application/json</code></p>
+              <p><strong>响应类型:</strong> <code>text/html</code></p>
+            </div>
+
+            <h4>请求参数</h4>
+            <table className="min-w-full border">
+              <thead>
+                <tr>
+                  <th className="px-4 py-2 border">参数</th>
+                  <th className="px-4 py-2 border">类型</th>
+                  <th className="px-4 py-2 border">必填</th>
+                  <th className="px-4 py-2 border">描述</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="px-4 py-2 border">markdown</td>
+                  <td className="px-4 py-2 border">string</td>
+                  <td className="px-4 py-2 border">是</td>
+                  <td className="px-4 py-2 border">Markdown格式的文本内容</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h4 className="mt-4">响应</h4>
+            <p>成功响应将返回一个包含思维导图的完整HTML页面，可以直接在浏览器中查看。</p>
+            
+            <h4 className="mt-6">使用示例</h4>
+            <h5>使用cURL</h5>
+            <div className="bg-gray-800 text-white p-4 rounded overflow-x-auto">
+              <pre>{htmlCurlExample}</pre>
+            </div>
+            
+            <h5 className="mt-4">使用JavaScript</h5>
+            <div className="bg-gray-800 text-white p-4 rounded overflow-x-auto">
+              <pre>{htmlFetchExample}</pre>
+            </div>
+
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 my-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-blue-700">
+                    HTML响应包含完整的思维导图页面，可以直接嵌入iframe或在新窗口中打开。这对于想要快速集成思维导图而无需处理JSON数据的场景特别有用。
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
