@@ -1,6 +1,6 @@
 # Mark2MindMap - Markdown转思维导图工具
 
-![Mark2MindMap Banner](https://via.placeholder.com/800x200/3b82f6/FFFFFF?text=Mark2MindMap)
+![Mark2MindMap Banner](https://skillre-typora.oss-cn-beijing.aliyuncs.com/img/markdown%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE%E7%94%9F%E6%88%90%E5%99%A8.png)
 
 Mark2MindMap是一个基于Web的工具，可以将Markdown文本快速转换为美观的、交互式的思维导图。项目采用Next.js构建，提供在线编辑器与API服务，让思维导图创建变得简单高效。
 
@@ -40,7 +40,7 @@ Mark2MindMap是一个基于Web的工具，可以将Markdown文本快速转换为
 1. 克隆仓库：
 
 ```bash
-git clone https://github.com/yourusername/mark2mindmap.git
+git clone https://github.com/skillre/mark2mindmap.git
 cd mark2mindmap
 ```
 
@@ -155,11 +155,26 @@ API_KEY=your-api-key-here
 
 ## 📧 联系方式
 
-如有任何问题，请通过以下方式联系：
+<aside>
+<img src="https://skillre-typora.oss-cn-beijing.aliyuncs.com/img/225045z10hbz41wglw0xk4.png.icon.ico" alt="https://skillre-typora.oss-cn-beijing.aliyuncs.com/img/225045z10hbz41wglw0xk4.png.icon.ico" width="40px" />
 
-- 项目维护者：[您的名字](mailto:your.email@example.com)
-- 项目仓库：[Github](https://github.com/yourusername/mark2mindmap)
+博客地址：[skillre](https://note.skillre.online/technology/2025/05/204f54d5-99e6-805c-b076-fe918f2227fb)
+
+</aside>
+
+<aside>
+<img src="https://skillre-typora.oss-cn-beijing.aliyuncs.com/img/github-mark.png" alt="https://skillre-typora.oss-cn-beijing.aliyuncs.com/img/github-mark.png" width="40px" />
+
+项目仓库：[Github](https://github.com/skillre/notion2ics)
+
+</aside>
+
+## ☕️☕️
+
+觉得有帮助，可以奖励作者一杯☕️，持续做出好用的工具。
+
+![](https://skillre-typora.oss-cn-beijing.aliyuncs.com/img/paycode.jpeg)
 
 ---
 
-<p align="center">用 ❤️ 制作</p> 
+希望这个工具能帮助您更好地管理日程安排！如果有任何问题或建议，请通过博客主页或GitHub Issues联系我。

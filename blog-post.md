@@ -1,6 +1,6 @@
 # Mark2MindMap: 将Markdown转为思维导图的开源工具
 
-![Mark2MindMap Banner](https://via.placeholder.com/800x200/3b82f6/FFFFFF?text=Mark2MindMap)
+![Mark2MindMap Banner](https://skillre-typora.oss-cn-beijing.aliyuncs.com/img/markdown%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE%E7%94%9F%E6%88%90%E5%99%A8.png)
 
 ## 前言
 
@@ -30,7 +30,7 @@ Mark2MindMap正是为解决这些问题而生，它让你可以用最熟悉的Ma
 
 ### 1. 直观的Web界面
 
-![编辑器界面](https://via.placeholder.com/800x450/f0f0f0/000000?text=编辑器界面示例)
+![编辑器界面](https://skillre-typora.oss-cn-beijing.aliyuncs.com/img/%E7%BC%96%E8%BE%91%E5%99%A8%E7%A4%BA%E4%BE%8B%E5%9B%BE.png)
 
 Mark2MindMap提供了简洁美观的Web界面，左侧是Markdown编辑器，右侧实时预览思维导图效果。界面设计遵循现代UI设计理念，使用Tailwind CSS构建，确保了良好的用户体验。
 
@@ -45,8 +45,6 @@ Mark2MindMap提供了简洁美观的Web界面，左侧是Markdown编辑器，右
 - **HTML文件**：包含完整的交互功能，可以离线使用
 
 ### 4. REST API服务
-
-![API文档](https://via.placeholder.com/800x450/f0f0f0/000000?text=API文档示例)
 
 除了Web界面，Mark2MindMap还提供了功能完善的API，允许你将思维导图生成功能集成到自己的应用中：
 
@@ -116,14 +114,6 @@ Mark2MindMap可以在多种场景下发挥价值：
 
 通过API将思维导图功能集成到博客、CMS或知识管理系统中。
 
-## 立即体验
-
-你可以通过以下方式体验Mark2MindMap：
-
-- **在线编辑器**：[https://mark2mindmap.vercel.app/editor](https://mark2mindmap.vercel.app/editor)
-- **API测试页面**：[https://mark2mindmap.vercel.app/api-test](https://mark2mindmap.vercel.app/api-test)
-- **API文档**：[https://mark2mindmap.vercel.app/api-docs](https://mark2mindmap.vercel.app/api-docs)
-
 ## 安装与部署
 
 如果你想在自己的环境中运行Mark2MindMap，只需几个简单步骤：
@@ -166,14 +156,28 @@ Mark2MindMap是一个开源项目，欢迎任何形式的贡献！你可以通�
 3. 完善文档
 4. 分享使用体验和建议
 
-项目仓库：[https://github.com/yourusername/mark2mindmap](https://github.com/yourusername/mark2mindmap)
+## 📧 联系方式
 
-## 结语
+<aside>
+<img src="https://skillre-typora.oss-cn-beijing.aliyuncs.com/img/225045z10hbz41wglw0xk4.png.icon.ico" alt="https://skillre-typora.oss-cn-beijing.aliyuncs.com/img/225045z10hbz41wglw0xk4.png.icon.ico" width="40px" />
 
-Mark2MindMap诞生于简化知识可视化的愿望，希望它能够帮助你更高效地组织思路、展示知识。无论你是学生、教师、研究人员、产品经理还是开发者，都可以从这个工具中获益。
+博客地址：[skillre](https://note.skillre.online/technology/2025/05/204f54d5-99e6-805c-b076-fe918f2227fb)
 
-如果你对这个项目感兴趣，欢迎试用、提出反馈，或者参与开发。让我们一起，让知识的展示和分享变得更加直观和高效！
+</aside>
+
+<aside>
+<img src="https://skillre-typora.oss-cn-beijing.aliyuncs.com/img/github-mark.png" alt="https://skillre-typora.oss-cn-beijing.aliyuncs.com/img/github-mark.png" width="40px" />
+
+项目仓库：[Github](https://github.com/skillre/notion2ics)
+
+</aside>
+
+## ☕️☕️
+
+觉得有帮助，可以奖励作者一杯☕️，持续做出好用的工具。
+
+![](https://skillre-typora.oss-cn-beijing.aliyuncs.com/img/paycode.jpeg)
 
 ---
 
-*注：本文提到的在线地址仅为示例，实际访问时请替换为你部署的实际地址。* 
+希望这个工具能帮助您更好地管理日程安排！如果有任何问题或建议，请通过博客主页或GitHub Issues联系我。
