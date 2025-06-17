@@ -13,8 +13,7 @@ export default function ApiDocsPage() {
   "markdown": "# 这是标题\\n## 这是子标题\\n- 这是列表项\\n  - 这是嵌套列表项",
   "title": "我的思维导图",
   "filename": "my-mindmap.html"
-}' \\
-  -o my-mindmap.html`;
+}'`;
 
   const fetchExample = `const response = await fetch('https://your-domain.com/api/markdown-to-mindmap', {
   method: 'POST',
@@ -30,20 +29,19 @@ export default function ApiDocsPage() {
 });
 
 if (response.ok) {
-  // 获取HTML内容
-  const htmlContent = await response.text();
+  // 获取JSON响应
+  const data = await response.json();
   
-  // 下载文件
-  const blob = new Blob([htmlContent], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  // 可以使用自定义文件名或从Content-Disposition获取文件名
-  a.download = 'my-mindmap.html';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+  // 响应示例:
+  // {
+  //   success: true,
+  //   message: "思维导图生成成功",
+  //   filename: "my-mindmap-1623456789.html",
+  //   url: "https://your-domain.com/mindmaps/my-mindmap-1623456789.html"
+  // }
+  
+  // 使用返回的URL访问生成的思维导图
+  window.open(data.url, '_blank');
 } else {
   const errorData = await response.json();
   console.error('Error:', errorData);
@@ -66,6 +64,7 @@ if (response.ok) {
           <h2>概述</h2>
           <p>
             我们的API允许您将Markdown文本转换为思维导图HTML文件。您可以使用此API将思维导图功能集成到您自己的应用程序中。
+            API会将生成的HTML文件保存在服务器上，并返回可访问的URL链接。
           </p>
         </section>
 
@@ -97,7 +96,7 @@ if (response.ok) {
             <p><strong>URL:</strong> <code>/api/markdown-to-mindmap</code></p>
             <p><strong>方法:</strong> <code>POST</code></p>
             <p><strong>内容类型:</strong> <code>application/json</code></p>
-            <p><strong>响应类型:</strong> <code>text/html</code> (作为文件下载)</p>
+            <p><strong>响应类型:</strong> <code>application/json</code></p>
           </div>
 
           <h4>请求参数</h4>
@@ -127,14 +126,44 @@ if (response.ok) {
                 <td className="px-4 py-2 border">filename</td>
                 <td className="px-4 py-2 border">string</td>
                 <td className="px-4 py-2 border">否</td>
-                <td className="px-4 py-2 border">下载的HTML文件名（默认为'mindmap.html'）</td>
+                <td className="px-4 py-2 border">生成的HTML文件名（默认为'mindmap.html'）</td>
               </tr>
             </tbody>
           </table>
 
           <h4 className="mt-4">响应</h4>
-          <p>成功响应将返回一个HTML文件，包含可交互的思维导图。响应会以文件形式下载，文件名可通过请求参数指定。</p>
-          <p>HTML文件包含完整的思维导图渲染所需的所有代码和样式，可以离线使用。</p>
+          <p>成功响应将返回一个JSON对象，包含以下字段：</p>
+          <table className="min-w-full border mt-2">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 border">字段</th>
+                <th className="px-4 py-2 border">类型</th>
+                <th className="px-4 py-2 border">描述</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="px-4 py-2 border">success</td>
+                <td className="px-4 py-2 border">boolean</td>
+                <td className="px-4 py-2 border">表示请求是否成功</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-2 border">message</td>
+                <td className="px-4 py-2 border">string</td>
+                <td className="px-4 py-2 border">描述请求结果的消息</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-2 border">filename</td>
+                <td className="px-4 py-2 border">string</td>
+                <td className="px-4 py-2 border">实际生成的文件名（含时间戳）</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-2 border">url</td>
+                <td className="px-4 py-2 border">string</td>
+                <td className="px-4 py-2 border">生成的思维导图HTML文件的访问URL</td>
+              </tr>
+            </tbody>
+          </table>
         </section>
 
         <section className="mb-8">

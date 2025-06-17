@@ -178,3 +178,98 @@ API_KEY=your-api-key-here
 ---
 
 希望这个工具能帮助您更好地管理日程安排！如果有任何问题或建议，请通过博客主页或GitHub Issues联系我。
+
+# Markdown到思维导图转换API
+
+该项目提供了一个API，用于将Markdown文本转换为交互式思维导图HTML文件。
+
+## 功能特点
+
+- 将Markdown文本转换为可视化的思维导图
+- 支持自定义文件名和标题
+- API密钥认证
+- 生成的思维导图文件存储在服务器上，并返回可访问的URL
+
+## 当前实现说明
+
+本项目的文件存储策略如下：
+
+1. **开发环境**:
+   - 文件保存在项目的`public/mindmaps`目录
+   - 文件可通过`/mindmaps/{filename}`直接访问
+
+2. **生产环境(Vercel)**:
+   - 文件保存在Vercel函数的`/tmp`目录（无服务器环境中唯一可写的目录）
+   - 文件通过API路由`/api/mindmap-file/{filename}`提供访问
+   - 由于无服务器函数的特性，文件在一段时间后可能会失效
+
+### 无服务器环境的限制
+
+在Vercel等无服务器环境中使用本地文件存储有以下限制：
+
+1. **临时存储**: Vercel的无服务器函数是无状态的，每次执行函数时文件系统可能会重置。这意味着存储的文件可能在一段时间后不可访问。
+
+2. **不共享存储**: 不同的函数实例之间不共享文件系统，这可能导致某些情况下无法访问之前生成的文件。
+
+3. **存储容量**: `/tmp`目录有存储空间限制。
+
+### 推荐的存储方案
+
+对于生产环境，建议使用以下替代方案：
+
+1. **Vercel Blob Storage**: Vercel提供的存储服务，适合静态文件存储。
+   ```javascript
+   // 使用 Vercel Blob Storage 示例
+   import { put } from '@vercel/blob';
+   
+   const { url } = await put('mindmap.html', htmlContent, { 
+     access: 'public',
+   });
+   ```
+
+2. **其他云存储服务**: 如AWS S3、Azure Blob Storage等。
+
+3. **数据库存储**: 可以将HTML内容存储在MongoDB、PostgreSQL等数据库中。
+
+## 本地开发
+
+1. 克隆此仓库
+2. 安装依赖: `npm install`
+3. 设置环境变量（可选）:
+   ```
+   API_KEY=your-secure-api-key
+   ```
+4. 启动开发服务器: `npm run dev`
+
+## API使用
+
+详细的API使用说明请参阅应用内的API文档页面。
+
+### 请求示例
+
+```javascript
+const response = await fetch('https://your-domain.com/api/markdown-to-mindmap', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'your-api-key-here'
+  },
+  body: JSON.stringify({
+    markdown: '# 这是标题\n## 这是子标题\n- 这是列表项\n  - 这是嵌套列表项',
+    title: '我的思维导图',
+    filename: 'my-mindmap.html'
+  })
+});
+
+// 响应格式
+// {
+//   success: true,
+//   message: "思维导图生成成功",
+//   filename: "my-mindmap-1623456789.html",
+//   url: "https://your-domain.com/api/mindmap-file/my-mindmap-1623456789.html"
+// }
+```
+
+## 许可证
+
+[MIT License](LICENSE)

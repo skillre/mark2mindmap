@@ -22,6 +22,7 @@ export default function ApiTestPage() {
   const [apiKey, setApiKey] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [result, setResult] = useState<{ success: boolean; message: string; filename: string; url: string } | null>(null);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +39,7 @@ export default function ApiTestPage() {
     
     setLoading(true);
     setError("");
+    setResult(null);
     
     try {
       // 构建API请求URL
@@ -63,24 +65,11 @@ export default function ApiTestPage() {
         throw new Error(errorData.error || "API请求失败");
       }
       
-      // 获取响应内容
-      const htmlContent = await response.text();
+      // 获取响应内容 - 现在是JSON格式
+      const data = await response.json();
       
-      // 创建Blob并下载
-      const blob = new Blob([htmlContent], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
-      
-      // 创建下载链接并点击
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename.trim() || "mindmap.html"; // 使用与请求相同的文件名
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      
-      // 释放URL
-      URL.revokeObjectURL(url);
-      
+      // 设置结果数据
+      setResult(data);
       setError("");
     } catch (err: any) {
       setError(err.message || "生成思维导图时出错");
@@ -174,6 +163,23 @@ export default function ApiTestPage() {
           {error && (
             <div className="mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded">
               {error}
+            </div>
+          )}
+          
+          {result && (
+            <div className="mb-4 p-4 bg-green-50 text-green-700 border border-green-200 rounded">
+              <p className="font-medium">{result.message}</p>
+              <p className="mt-2">文件名: {result.filename}</p>
+              <div className="mt-2">
+                <a 
+                  href={result.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  查看思维导图
+                </a>
+              </div>
             </div>
           )}
           

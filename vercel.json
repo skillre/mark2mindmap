@@ -1,5 +1,12 @@
 {
   "name": "mark2mindmap",
   "framework": "nextjs",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "buildCommand": "mkdir -p public/mindmaps && npm run build",
+  "functions": {
+    "api/markdown-to-mindmap/route.ts": {
+      "includeFiles": "public/mindmaps/**",
+      "memory": 1024
+    }
+  }
 } 

@@ -1,8 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Transformer } from "markmap-lib";
+import path from "path";
+import fs from "fs";
+import { promises as fsPromises } from "fs";
 
 // 创建一个transformer实例
 const transformer = new Transformer();
+
+// 定义文件存储路径
+// 在Vercel无服务器环境中，/tmp是唯一可写的目录
+const STORAGE_DIR = process.env.NODE_ENV === 'production' ? '/tmp' : path.join(process.cwd(), "public");
+const PUBLIC_DIR = path.join(process.cwd(), "public");
+const MINDMAPS_DIR = path.join(STORAGE_DIR, "mindmaps");
+const PUBLIC_MINDMAPS_DIR = path.join(PUBLIC_DIR, "mindmaps");
+
+// 确保存储目录存在
+const ensureDirectoryExists = async () => {
+  try {
+    // 检查并创建临时存储目录
+    if (!fs.existsSync(MINDMAPS_DIR)) {
+      await fsPromises.mkdir(MINDMAPS_DIR, { recursive: true });
+    }
+    
+    // 确保public/mindmaps目录存在（仅在开发环境需要）
+    if (process.env.NODE_ENV !== 'production' && !fs.existsSync(PUBLIC_MINDMAPS_DIR)) {
+      await fsPromises.mkdir(PUBLIC_MINDMAPS_DIR, { recursive: true });
+    }
+  } catch (error) {
+    console.error("创建目录时出错:", error);
+    throw error;
+  }
+};
 
 // API密钥验证函数
 const validateApiKey = (apiKey: string | null) => {
@@ -64,31 +92,64 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+      // 确保目录存在
+      await ensureDirectoryExists();
+      
       // 转换markdown为思维导图数据
       const { root, features } = transformer.transform(body.markdown);
       
       // 获取文件名（如果提供）或使用默认文件名
-      const filename = body.filename ? 
+      let filename = body.filename ? 
         (body.filename.endsWith('.html') ? body.filename : `${body.filename}.html`) : 
         'mindmap.html';
       
-      // 创建HTML文件内容，将filename作为meta标签嵌入
+      // 防止文件名冲突，添加时间戳
+      const timestamp = Date.now();
+      const fileNameWithoutExt = filename.replace('.html', '');
+      filename = `${fileNameWithoutExt}-${timestamp}.html`;
+      
+      // 创建HTML文件内容
       const htmlContent = generateMarkmapHtml(
         root, 
         body.title || 'Markdown MindMap', 
         filename
       );
       
-      // 设置为文件下载
-      headers.set('Content-Disposition', `attachment; filename="${filename}"`);
-      headers.set('Content-Type', 'text/html; charset=utf-8');
-      headers.set('X-Filename', filename); // 添加自定义头，可能有助于一些系统识别
+      // 文件的完整路径
+      const filePath = path.join(MINDMAPS_DIR, filename);
       
-      // 返回HTML文件
-      return new NextResponse(htmlContent, {
-        status: 200,
-        headers,
-      });
+      // 保存文件
+      await fsPromises.writeFile(filePath, htmlContent);
+      
+      // 如果是在开发环境，还要复制到public目录
+      if (process.env.NODE_ENV !== 'production') {
+        const publicFilePath = path.join(PUBLIC_MINDMAPS_DIR, filename);
+        await fsPromises.writeFile(publicFilePath, htmlContent);
+      }
+      
+      // 构建文件URL
+      const baseUrl = new URL(request.url).origin;
+      let fileUrl;
+      
+      // 在生产环境中，使用API路由提供文件访问
+      // 在开发环境中，可以直接从public目录访问
+      if (process.env.NODE_ENV === 'production') {
+        fileUrl = `${baseUrl}/api/mindmap-file/${filename}`;
+      } else {
+        fileUrl = `${baseUrl}/mindmaps/${filename}`;
+      }
+      
+      // 返回成功信息和文件URL
+      headers.set("Content-Type", "application/json");
+      return new NextResponse(
+        JSON.stringify({ 
+          success: true, 
+          message: "思维导图生成成功", 
+          filename: filename,
+          url: fileUrl
+        }),
+        { status: 200, headers }
+      );
     } catch (transformError) {
       console.error("转换Markdown时出错:", transformError);
       headers.set("Content-Type", "application/json");
