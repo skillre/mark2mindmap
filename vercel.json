@@ -4,8 +4,11 @@
   "installCommand": "npm install",
   "buildCommand": "mkdir -p public/mindmaps && npm run build",
   "functions": {
-    "api/markdown-to-mindmap/route.ts": {
+    "app/api/markdown-to-mindmap/route.ts": {
       "includeFiles": "public/mindmaps/**",
+      "memory": 1024
+    },
+    "app/api/mindmap-file/[filename]/route.ts": {
       "memory": 1024
     }
   }
