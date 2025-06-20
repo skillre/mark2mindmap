@@ -12,27 +12,13 @@
       "memory": 1024
     }
   },
-  "env": {
-    "API_KEY": {
-      "description": "API访问密钥，用于验证API请求"
-    },
-    "USE_GITHUB_STORAGE": {
-      "description": "是否启用GitHub存储功能，设置为'true'启用"
-    },
-    "GITHUB_TOKEN": {
-      "description": "GitHub个人访问令牌，用于访问GitHub API"
-    },
-    "GITHUB_OWNER": {
-      "description": "GitHub用户名或组织名"
-    },
-    "GITHUB_REPO": {
-      "description": "存储思维导图的GitHub仓库名"
-    },
-    "GITHUB_BRANCH": {
-      "description": "GitHub仓库的分支名，默认为'main'"
-    },
-    "GITHUB_PAGES_URL": {
-      "description": "可选，如果使用GitHub Pages，可设置基础URL"
-    }
+  "buildEnv": {
+    "API_KEY": "API访问密钥，用于验证API请求",
+    "USE_GITHUB_STORAGE": "是否启用GitHub存储功能，设置为'true'启用",
+    "GITHUB_TOKEN": "GitHub个人访问令牌，用于访问GitHub API",
+    "GITHUB_OWNER": "GitHub用户名或组织名",
+    "GITHUB_REPO": "存储思维导图的GitHub仓库名",
+    "GITHUB_BRANCH": "GitHub仓库的分支名，默认为'main'",
+    "GITHUB_PAGES_URL": "可选，如果使用GitHub Pages，可设置基础URL"
   }
 } 

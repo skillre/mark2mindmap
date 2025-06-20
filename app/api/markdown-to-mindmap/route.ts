@@ -149,12 +149,12 @@ export async function POST(request: NextRequest) {
       } else {
         // 未启用GitHub存储，使用默认的文件URL
         const baseUrl = new URL(request.url).origin;
-        // 在生产环境中，使用API路由提供文件访问
-        // 在开发环境中，可以直接从public目录访问
-        if (process.env.NODE_ENV === 'production') {
-          fileUrl = `${baseUrl}/api/mindmap-file/${filename}`;
-        } else {
-          fileUrl = `${baseUrl}/mindmaps/${filename}`;
+      // 在生产环境中，使用API路由提供文件访问
+      // 在开发环境中，可以直接从public目录访问
+      if (process.env.NODE_ENV === 'production') {
+        fileUrl = `${baseUrl}/api/mindmap-file/${filename}`;
+      } else {
+        fileUrl = `${baseUrl}/mindmaps/${filename}`;
         }
       }
       
