@@ -131,34 +131,31 @@ export async function POST(request: NextRequest) {
         await fsPromises.writeFile(publicFilePath, htmlContent);
       }
       
+      // 获取Vercel服务基础URL
+      const baseUrl = new URL(request.url).origin;
+      
+      // 构建Vercel服务URL - 始终使用Vercel API路由
       let fileUrl;
+      if (process.env.NODE_ENV === 'production') {
+        fileUrl = `${baseUrl}/api/mindmap-file/${filename}`;
+      } else {
+        fileUrl = `${baseUrl}/mindmaps/${filename}`;
+      }
+      
       let githubData = null;
       
       // 如果启用了GitHub存储，将文件保存到GitHub
       if (USE_GITHUB_STORAGE) {
         try {
           githubData = await saveToGitHub(filename, htmlContent);
-          // 使用GitHub Raw URL作为文件访问链接
-          fileUrl = githubData.rawUrl;
+          // 注意：这里我们不再使用GitHub的URL，而是继续使用Vercel的URL
         } catch (githubError) {
           console.error("保存到GitHub时出错:", githubError);
-          // 如果GitHub存储失败，回退到使用API路由
-          const baseUrl = new URL(request.url).origin;
-          fileUrl = `${baseUrl}/api/mindmap-file/${filename}`;
-        }
-      } else {
-        // 未启用GitHub存储，使用默认的文件URL
-        const baseUrl = new URL(request.url).origin;
-      // 在生产环境中，使用API路由提供文件访问
-      // 在开发环境中，可以直接从public目录访问
-      if (process.env.NODE_ENV === 'production') {
-        fileUrl = `${baseUrl}/api/mindmap-file/${filename}`;
-      } else {
-        fileUrl = `${baseUrl}/mindmaps/${filename}`;
+          // 记录错误，但不影响返回Vercel URL
         }
       }
       
-      // 返回成功信息和文件URL
+      // 返回成功信息和文件URL（始终是Vercel URL）
       headers.set("Content-Type", "application/json");
       return new NextResponse(
         JSON.stringify({ 
@@ -166,7 +163,8 @@ export async function POST(request: NextRequest) {
           message: "思维导图生成成功", 
           filename: filename,
           url: fileUrl,
-          github: githubData
+          github: githubData,
+          storageType: USE_GITHUB_STORAGE ? "github" : "vercel-tmp"
         }),
         { status: 200, headers }
       );
