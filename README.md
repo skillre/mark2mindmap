@@ -13,6 +13,7 @@ Mark2MindMap是一个基于Web的工具，可以将Markdown文本快速转换为
 - 🔐 **API鉴权** - 采用API密钥认证，保护您的服务不被滥用
 - 🌍 **CORS支持** - 允许跨域请求，便于前端应用集成
 - 📋 **丰富的Markdown支持** - 兼容标题层级、列表、代码块、链接等格式
+- 📦 **GitHub存储** - 支持将生成的思维导图存储在GitHub仓库，实现数据持久化
 
 ## 🚀 在线体验
 
@@ -27,6 +28,7 @@ Mark2MindMap是一个基于Web的工具，可以将Markdown文本快速转换为
 - [markmap-lib](https://markmap.js.org/) - Markdown思维导图转换库
 - [Tailwind CSS](https://tailwindcss.com/) - 样式框架
 - [Vercel](https://vercel.com/) - 部署平台
+- [GitHub API](https://docs.github.com/en/rest) - 用于文件持久化存储
 
 ## 📋 安装与使用
 
@@ -34,6 +36,7 @@ Mark2MindMap是一个基于Web的工具，可以将Markdown文本快速转换为
 
 - Node.js 18.x 或更高版本
 - npm 或 yarn
+- GitHub账号（如果需要使用GitHub存储功能）
 
 ### 本地安装
 
@@ -52,7 +55,25 @@ npm install
 yarn
 ```
 
-3. 启动开发服务器：
+3. 配置环境变量：
+
+创建一个`.env.local`文件，添加以下配置：
+
+```
+# API密钥配置
+API_KEY=your-api-key-here
+
+# GitHub 配置 (可选，仅当需要GitHub存储时配置)
+USE_GITHUB_STORAGE=true
+GITHUB_TOKEN=your-github-personal-access-token
+GITHUB_OWNER=your-github-username-or-org
+GITHUB_REPO=your-repository-name
+GITHUB_BRANCH=main
+# 如果使用GitHub Pages，可以设置这个变量，否则使用raw.githubusercontent.com URL
+# GITHUB_PAGES_URL=https://your-username.github.io/your-repo
+```
+
+4. 启动开发服务器：
 
 ```bash
 npm run dev
@@ -60,7 +81,7 @@ npm run dev
 yarn dev
 ```
 
-4. 打开浏览器访问 [http://localhost:3000](http://localhost:3000)
+5. 打开浏览器访问 [http://localhost:3000](http://localhost:3000)
 
 ### 构建生产版本
 
@@ -106,7 +127,7 @@ curl -X POST \
 
 **响应：**
 
-服务器将返回一个HTML文件，其中包含可交互的思维导图。文件可离线使用，并完全支持交互功能。
+服务器将返回一个JSON响应，包含生成的思维导图URL和相关信息。
 
 ## 🔧 配置
 
@@ -115,7 +136,29 @@ curl -X POST \
 ```
 # API密钥，用于API鉴权
 API_KEY=your-api-key-here
+
+# GitHub存储配置（可选）
+USE_GITHUB_STORAGE=true
+GITHUB_TOKEN=your-github-personal-access-token
+GITHUB_OWNER=your-github-username-or-org
+GITHUB_REPO=your-repository-name
+GITHUB_BRANCH=main
 ```
+
+### GitHub存储配置说明
+
+1. **创建GitHub个人访问令牌**：
+   - 访问 GitHub 设置 -> Developer settings -> Personal access tokens -> Fine-grained tokens
+   - 创建一个新令牌，至少需要有对目标仓库的读写权限
+   - 将生成的令牌保存为 `GITHUB_TOKEN` 环境变量
+
+2. **配置目标仓库**：
+   - `GITHUB_OWNER`：您的GitHub用户名或组织名
+   - `GITHUB_REPO`：用于存储思维导图的仓库名
+   - `GITHUB_BRANCH`：存储文件的分支名（默认为main）
+
+3. **启用GitHub存储**：
+   - 设置 `USE_GITHUB_STORAGE=true`
 
 ## 🚀 部署
 
@@ -125,7 +168,13 @@ API_KEY=your-api-key-here
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https%3A%2F%2Fgithub.com%2Fyourusername%2Fmark2mindmap)
 
-部署后，请在Vercel项目设置中添加环境变量`API_KEY`。
+部署后，请在Vercel项目设置中添加以下环境变量：
+- `API_KEY`：API访问密钥
+- `USE_GITHUB_STORAGE`：设置为true启用GitHub存储
+- `GITHUB_TOKEN`：GitHub个人访问令牌
+- `GITHUB_OWNER`：GitHub用户名/组织名
+- `GITHUB_REPO`：用于存储思维导图的仓库名
+- `GITHUB_BRANCH`：分支名（可选）
 
 ## 📚 Markdown支持
 
@@ -189,87 +238,52 @@ API_KEY=your-api-key-here
 - 支持自定义文件名和标题
 - API密钥认证
 - 生成的思维导图文件存储在服务器上，并返回可访问的URL
+- 支持GitHub存储，实现数据持久化
 
-## 当前实现说明
+## 存储实现说明
 
-本项目的文件存储策略如下：
+本项目支持两种存储方案：
 
-1. **开发环境**:
-   - 文件保存在项目的`public/mindmaps`目录
-   - 文件可通过`/mindmaps/{filename}`直接访问
+1. **本地/临时存储**:
+   - **开发环境**: 文件保存在项目的`public/mindmaps`目录，可通过`/mindmaps/{filename}`直接访问
+   - **生产环境(Vercel)**: 文件保存在Vercel函数的`/tmp`目录，通过API路由`/api/mindmap-file/{filename}`提供访问
 
-2. **生产环境(Vercel)**:
-   - 文件保存在Vercel函数的`/tmp`目录（无服务器环境中唯一可写的目录）
-   - 文件通过API路由`/api/mindmap-file/{filename}`提供访问
-   - 由于无服务器函数的特性，文件在一段时间后可能会失效
+2. **GitHub存储**:
+   - 文件永久存储在GitHub仓库的指定位置
+   - 可通过GitHub Raw URL访问（如`https://raw.githubusercontent.com/user/repo/branch/mindmaps/filename.html`）
+   - 实现数据持久化，解决Vercel无服务器环境下临时存储的限制
 
 ### 无服务器环境的限制
 
 在Vercel等无服务器环境中使用本地文件存储有以下限制：
 
-1. **临时存储**: Vercel的无服务器函数是无状态的，每次执行函数时文件系统可能会重置。这意味着存储的文件可能在一段时间后不可访问。
-
-2. **不共享存储**: 不同的函数实例之间不共享文件系统，这可能导致某些情况下无法访问之前生成的文件。
-
+1. **临时存储**: Vercel的无服务器函数是无状态的，每次执行函数时文件系统可能会重置。
+2. **不共享存储**: 不同的函数实例之间不共享文件系统。
 3. **存储容量**: `/tmp`目录有存储空间限制。
 
-### 推荐的存储方案
+### GitHub存储的优势
 
-对于生产环境，建议使用以下替代方案：
+使用GitHub存储方案可以解决以下问题：
 
-1. **Vercel Blob Storage**: Vercel提供的存储服务，适合静态文件存储。
-   ```javascript
-   // 使用 Vercel Blob Storage 示例
-   import { put } from '@vercel/blob';
-   
-   const { url } = await put('mindmap.html', htmlContent, { 
-     access: 'public',
-   });
-   ```
-
-2. **其他云存储服务**: 如AWS S3、Azure Blob Storage等。
-
-3. **数据库存储**: 可以将HTML内容存储在MongoDB、PostgreSQL等数据库中。
+1. **数据持久化**: 文件永久存储在GitHub仓库中，不会因服务器实例重启而丢失。
+2. **版本控制**: 自动获得Git提供的版本控制功能。
+3. **无服务器友好**: 完全兼容Vercel等无服务器平台的限制。
+4. **零成本**: 使用GitHub免费存储，无需额外付费。
 
 ## 本地开发
 
 1. 克隆此仓库
 2. 安装依赖: `npm install`
-3. 设置环境变量（可选）:
+3. 设置环境变量:
    ```
    API_KEY=your-secure-api-key
+   USE_GITHUB_STORAGE=true
+   GITHUB_TOKEN=your-github-personal-access-token
+   GITHUB_OWNER=your-github-username
+   GITHUB_REPO=your-repository-name
    ```
 4. 启动开发服务器: `npm run dev`
 
 ## API使用
 
 详细的API使用说明请参阅应用内的API文档页面。
-
-### 请求示例
-
-```javascript
-const response = await fetch('https://your-domain.com/api/markdown-to-mindmap', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'x-api-key': 'your-api-key-here'
-  },
-  body: JSON.stringify({
-    markdown: '# 这是标题\n## 这是子标题\n- 这是列表项\n  - 这是嵌套列表项',
-    title: '我的思维导图',
-    filename: 'my-mindmap.html'
-  })
-});
-
-// 响应格式
-// {
-//   success: true,
-//   message: "思维导图生成成功",
-//   filename: "my-mindmap-1623456789.html",
-//   url: "https://your-domain.com/api/mindmap-file/my-mindmap-1623456789.html"
-// }
-```
-
-## 许可证
-
-[MIT License](LICENSE)

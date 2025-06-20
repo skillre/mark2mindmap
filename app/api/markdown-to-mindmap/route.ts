@@ -3,6 +3,7 @@ import { Transformer } from "markmap-lib";
 import path from "path";
 import fs from "fs";
 import { promises as fsPromises } from "fs";
+import { saveToGitHub } from "../../services/githubService";
 
 // 创建一个transformer实例
 const transformer = new Transformer();
@@ -13,6 +14,9 @@ const STORAGE_DIR = process.env.NODE_ENV === 'production' ? '/tmp' : path.join(p
 const PUBLIC_DIR = path.join(process.cwd(), "public");
 const MINDMAPS_DIR = path.join(STORAGE_DIR, "mindmaps");
 const PUBLIC_MINDMAPS_DIR = path.join(PUBLIC_DIR, "mindmaps");
+
+// 是否启用GitHub存储
+const USE_GITHUB_STORAGE = process.env.USE_GITHUB_STORAGE === 'true';
 
 // 确保存储目录存在
 const ensureDirectoryExists = async () => {
@@ -118,7 +122,7 @@ export async function POST(request: NextRequest) {
       // 文件的完整路径
       const filePath = path.join(MINDMAPS_DIR, filename);
       
-      // 保存文件
+      // 保存文件到本地（临时）
       await fsPromises.writeFile(filePath, htmlContent);
       
       // 如果是在开发环境，还要复制到public目录
@@ -127,16 +131,31 @@ export async function POST(request: NextRequest) {
         await fsPromises.writeFile(publicFilePath, htmlContent);
       }
       
-      // 构建文件URL
-      const baseUrl = new URL(request.url).origin;
       let fileUrl;
+      let githubData = null;
       
-      // 在生产环境中，使用API路由提供文件访问
-      // 在开发环境中，可以直接从public目录访问
-      if (process.env.NODE_ENV === 'production') {
-        fileUrl = `${baseUrl}/api/mindmap-file/${filename}`;
+      // 如果启用了GitHub存储，将文件保存到GitHub
+      if (USE_GITHUB_STORAGE) {
+        try {
+          githubData = await saveToGitHub(filename, htmlContent);
+          // 使用GitHub Raw URL作为文件访问链接
+          fileUrl = githubData.rawUrl;
+        } catch (githubError) {
+          console.error("保存到GitHub时出错:", githubError);
+          // 如果GitHub存储失败，回退到使用API路由
+          const baseUrl = new URL(request.url).origin;
+          fileUrl = `${baseUrl}/api/mindmap-file/${filename}`;
+        }
       } else {
-        fileUrl = `${baseUrl}/mindmaps/${filename}`;
+        // 未启用GitHub存储，使用默认的文件URL
+        const baseUrl = new URL(request.url).origin;
+        // 在生产环境中，使用API路由提供文件访问
+        // 在开发环境中，可以直接从public目录访问
+        if (process.env.NODE_ENV === 'production') {
+          fileUrl = `${baseUrl}/api/mindmap-file/${filename}`;
+        } else {
+          fileUrl = `${baseUrl}/mindmaps/${filename}`;
+        }
       }
       
       // 返回成功信息和文件URL
@@ -146,7 +165,8 @@ export async function POST(request: NextRequest) {
           success: true, 
           message: "思维导图生成成功", 
           filename: filename,
-          url: fileUrl
+          url: fileUrl,
+          github: githubData
         }),
         { status: 200, headers }
       );

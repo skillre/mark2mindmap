@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
 import { promises as fsPromises } from "fs";
+import { getFromGitHub } from "../../../services/githubService";
 
 // 定义文件存储路径
 const STORAGE_DIR = process.env.NODE_ENV === 'production' ? '/tmp' : path.join(process.cwd(), "public");
 const MINDMAPS_DIR = path.join(STORAGE_DIR, "mindmaps");
+
+// 是否启用GitHub存储
+const USE_GITHUB_STORAGE = process.env.USE_GITHUB_STORAGE === 'true';
 
 export async function GET(
   request: NextRequest,
@@ -22,6 +26,27 @@ export async function GET(
       );
     }
     
+    // 如果启用了GitHub存储，尝试从GitHub获取文件
+    if (USE_GITHUB_STORAGE) {
+      try {
+        // 从GitHub获取文件内容
+        const fileContent = await getFromGitHub(filename);
+        
+        // 返回HTML内容
+        return new NextResponse(fileContent, {
+          status: 200,
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+          },
+        });
+      } catch (githubError) {
+        console.error(`从GitHub获取文件失败: ${filename}`, githubError);
+        // 如果从GitHub获取失败，回退到本地文件查找
+        // 继续执行后面的本地文件查找逻辑
+      }
+    }
+    
+    // 本地文件查找逻辑
     // 构建文件路径
     const filePath = path.join(MINDMAPS_DIR, filename);
     
